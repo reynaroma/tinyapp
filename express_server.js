@@ -7,6 +7,10 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+// Set EJS as the view engine
+app.set('view engine', 'ejs');
+
+// Adding routes
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
