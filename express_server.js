@@ -9,8 +9,6 @@ const urlDatabase = {
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
-
-//
 app.use(express.urlencoded({ extended: true }));
 
 // Adding routes
@@ -32,8 +30,10 @@ app.get('/urls', (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  const id = generateRandomString();
+  const longURL = req.body.longURL;
+  urlDatabase[id] = longURL;
+  res.redirect(`/urls/${id}`);
 });
 
 app.get('/urls/new', (req, res) => {
@@ -50,5 +50,10 @@ app.listen(PORT, () => {
 });
 
 const generateRandomString = () => {
-
+  let result = "";
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  for (let i = 0; i < 6; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return result;
 };
