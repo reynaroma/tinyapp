@@ -21,6 +21,17 @@ const users = {
   },
 };
 
+// en email lookup helper function
+const getUserByEmail = (email) => {
+  for (const u in users) {
+    const existingUser = users[u];
+    if (existingUser.email === email) {
+      return existingUser;
+    }
+  }
+  return null;
+};
+
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
 app.use(cookieParser());
@@ -51,8 +62,19 @@ app.post('/register', (req, res) => {
   };
   // set a user_id cookie containing the user's newly generated ID
   res.cookie('id', user.id);
+  // if the e-mail or password are empty strings, send back a response with the 400 status code
+  if (!user.email || !user.password) {
+    return res.status(400).send('You must provide a username and password');
+  }
+
+  // if found send a response
+  const foundEmail = getUserByEmail(email);
+  if (foundEmail) {
+    return res.status(400).send('This email already exists');
+  }
+
   users[id] = user; // add the new user object to global users object
-  console.log(users);
+  console.log(users); // checker
   return res.redirect('/urls');
 });
 
