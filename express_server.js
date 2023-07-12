@@ -29,6 +29,13 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars);
 });
 
+app.post('/login', (req, res) => {
+  const username = req.body.username;
+  console.log(`User logged in: ${username}`);
+  res.cookie('username', username);
+  res.redirect('/urls');
+});
+
 app.post("/urls", (req, res) => {
   const id = generateRandomString();
   const longURL = req.body.longURL;
