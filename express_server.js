@@ -15,46 +15,51 @@ app.use(express.urlencoded({ extended: true }));
 
 // Adding routes
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  return res.send("Hello!");
+});
+
+// a GET /register endpoint
+app.get('/register', (req, res) => {
+  return res.render('register', { username: '' });
 });
 
 app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
+  return res.json(urlDatabase);
 });
 
 app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b><body><html>\n");
+  return res.send("<html><body>Hello <b>World</b><body><html>\n");
 });
 
 app.get('/urls', (req, res) => {
   const templateVars = {urls: urlDatabase, username: req.cookies['username']};
-  res.render('urls_index', templateVars);
+  return res.render('urls_index', templateVars);
 });
 
 app.post('/login', (req, res) => {
   const username = req.body.username;
   console.log(`User logged in: ${username}`);
   res.cookie('username', username);
-  res.redirect('/urls');
+  return res.redirect('/urls');
 });
 
 app.post('/logout', (req, res) => {
   res.clearCookie('username');
-  res.redirect('/urls');
+  return res.redirect('/urls');
 });
 
 app.post("/urls", (req, res) => {
   const id = generateRandomString();
   const longURL = req.body.longURL;
   urlDatabase[id] = longURL;
-  res.redirect(`/urls/${id}`);
+  return res.redirect(`/urls/${id}`);
 });
 
 app.get('/urls/new', (req, res) => {
   const templateVars = {
     username: req.cookies['username'],
   };
-  res.render('urls_new', templateVars);
+  return res.render('urls_new', templateVars);
 });
 
 app.get('/urls/:id', (req, res) => {
@@ -63,7 +68,7 @@ app.get('/urls/:id', (req, res) => {
     longURL: urlDatabase[req.params.id],
     username: req.cookies['username']
   };
-  res.render('urls_show', templateVars);
+  return res.render('urls_show', templateVars);
 });
 
 app.get('/u/:id', (req, res) => {
@@ -71,16 +76,16 @@ app.get('/u/:id', (req, res) => {
   console.log('Requested ID:', req.params.id);
   console.log('URL Database:', urlDatabase);
   if (longURL) {
-    res.redirect(longURL);
+    return res.redirect(longURL);
   } else {
     console.log('URL Not Found!');
-    res.status(404).send('URL Not Found!');
+    return res.status(404).send('URL Not Found!');
   }
 });
 
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id];
-  res.redirect('/urls');
+  return res.redirect('/urls');
 });
 
 app.post("/urls/:id/edit", (req, res) => {
@@ -90,7 +95,7 @@ app.post("/urls/:id/edit", (req, res) => {
   };
   // const longURL = req.body.longURL;
   // urlDatabase[req.params.id] = longURL;
-  res.render('urls_show', templateVars);
+  return res.render('urls_show', templateVars);
 });
 
 app.listen(PORT, () => {
