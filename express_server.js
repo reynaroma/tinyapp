@@ -60,7 +60,7 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.post("/urls/:id/edit", (req, res) => {
-  let templateVars = {id: req.params.id, longURL: urlDatabase[req.params.id]};
+  const templateVars = {id: req.params.id, longURL: urlDatabase[req.params.id]};
   const longURL = req.body.longURL;
   urlDatabase[req.params.id] = longURL;
   res.render('urls_show', templateVars);
