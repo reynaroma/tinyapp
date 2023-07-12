@@ -8,6 +8,19 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  abcdef: {
+    id: "abc",
+    email: "user@example.com",
+    password: "1234"
+  },
+  defghi: {
+    id: "def",
+    email: "user@example.com",
+    password: "5678"
+  },
+};
+
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
 app.use(cookieParser());
@@ -20,7 +33,27 @@ app.get("/", (req, res) => {
 
 // a GET /register endpoint
 app.get('/register', (req, res) => {
-  return res.render('register', { username: '' });
+  const id = req.cookies.id;
+  const user = users[id];
+  return res.render('register', { user });
+});
+
+// this endpoint is a Registration Handler /POST /register endpoint
+app.post('/register', (req, res) => {
+  const id = generateRandomString();
+  const email = req.body.email;
+  const password = req.body.password;
+  // new user object to be added in the global users object
+  const user = {
+    id,
+    email,
+    password
+  };
+  // set a user_id cookie containing the user's newly generated ID
+  res.cookie('id', user.id);
+  users[id] = user; // add the new user object to global users object
+  console.log(users);
+  return res.redirect('/urls');
 });
 
 app.get("/urls.json", (req, res) => {
@@ -32,7 +65,9 @@ app.get("/hello", (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
-  const templateVars = {urls: urlDatabase, username: req.cookies['username']};
+  const id = req.cookies.id;
+  const user = users[id];
+  const templateVars = {urls: urlDatabase, user};
   return res.render('urls_index', templateVars);
 });
 
@@ -44,7 +79,7 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('id');
   return res.redirect('/urls');
 });
 
@@ -57,16 +92,18 @@ app.post("/urls", (req, res) => {
 
 app.get('/urls/new', (req, res) => {
   const templateVars = {
-    username: req.cookies['username'],
+    user: users[req.cookies.id]
   };
   return res.render('urls_new', templateVars);
 });
 
 app.get('/urls/:id', (req, res) => {
+  const id = req.cookies.id;
+  const user = id ? users[id] : null;
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id],
-    username: req.cookies['username']
+    user
   };
   return res.render('urls_show', templateVars);
 });
@@ -91,7 +128,7 @@ app.post("/urls/:id/delete", (req, res) => {
 app.post("/urls/:id/edit", (req, res) => {
   const templateVars = {id: req.params.id,
     longURL: urlDatabase[req.params.id],
-    username: req.cookies['username']
+    user: users[req.cookies.id],
   };
   // const longURL = req.body.longURL;
   // urlDatabase[req.params.id] = longURL;
