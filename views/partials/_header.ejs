@@ -13,10 +13,14 @@
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-      <div class="navbar-nav">
+      <div class="navbar-nav mr-auto">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
+      <form class="form-inline" method="post" action="/login">
+        <input type="text" name="username" class="form-control mr-sm-2" placeholder="Username"/>
+        <button type="submit" class="btn btn-outline-dark">Login</button>
+      </form>
     </div>
   </nav>
 </header>
