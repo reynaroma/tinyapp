@@ -38,6 +38,11 @@ app.post('/login', (req, res) => {
   res.redirect('/urls');
 });
 
+app.post('/logout', (req, res) => {
+  res.clearCookie('username');
+  res.redirect('/urls');
+});
+
 app.post("/urls", (req, res) => {
   const id = generateRandomString();
   const longURL = req.body.longURL;
@@ -46,22 +51,33 @@ app.post("/urls", (req, res) => {
 });
 
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new');
+  const templateVars = {
+    username: req.cookies['username'],
+  };
+  res.render('urls_new', templateVars);
 });
 
 app.get('/urls/:id', (req, res) => {
-  const templateVars = {id: req.params.id, longURL: urlDatabase[req.params.id]};
+  const templateVars = {
+    id: req.params.id,
+    longURL: urlDatabase[req.params.id],
+    username: req.cookies['username']
+  };
   res.render('urls_show', templateVars);
 });
 
 app.get('/u/:id', (req, res) => {
   const longURL = urlDatabase[req.params.id];
+  console.log('Requested ID:', req.params.id);
+  console.log('URL Database:', urlDatabase);
   if (longURL) {
     res.redirect(longURL);
   } else {
+    console.log('URL Not Found!');
     res.status(404).send('URL Not Found!');
   }
 });
+
 
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id];
@@ -69,9 +85,12 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.post("/urls/:id/edit", (req, res) => {
-  const templateVars = {id: req.params.id, longURL: urlDatabase[req.params.id]};
-  const longURL = req.body.longURL;
-  urlDatabase[req.params.id] = longURL;
+  const templateVars = {id: req.params.id,
+    longURL: urlDatabase[req.params.id],
+    username: req.cookies['username']
+  };
+  // const longURL = req.body.longURL;
+  // urlDatabase[req.params.id] = longURL;
   res.render('urls_show', templateVars);
 });
 
