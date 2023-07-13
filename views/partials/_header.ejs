@@ -16,8 +16,10 @@
       <div class="navbar-nav mr-auto">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+        <a class="nav-item nav-link" href="/register">Register</a>
+        <a class="nav-item nav-link" href="/login">Login</a>
       </div>
-      <% if (user) {%>
+      <!-- <% if (user) {%>
         <span class="navbar-text ml mr-sm-2" >
           Logged in as <%= user.email %>!
         </span>
@@ -29,7 +31,7 @@
           <input type="text" name="username" class="form-control mr-sm-2" placeholder="Username"/>
           <button type="submit" class="btn btn-outline-dark">Login</button>
         </form>
-      <% } %>
+      <% } %> -->
     </div>
   </nav>
 </header>

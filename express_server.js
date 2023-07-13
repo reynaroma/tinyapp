@@ -44,8 +44,7 @@ app.get("/", (req, res) => {
 
 // an route for an endpoint /login GET
 app.get('/login', (req, res) => {
-
-  return res.render('login', { user: '' });
+  return res.render('login');
 });
 
 // a GET /register endpoint
@@ -101,6 +100,7 @@ app.get('/urls', (req, res) => {
 
 app.post('/login', (req, res) => {
   const email = req.body.email;
+  const password = req.body.password;
   console.log(`User logged in: ${email}`);
   // res.cookie('username', username);
   return res.redirect('/urls');
