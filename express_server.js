@@ -108,7 +108,6 @@ app.post('/register', (req, res) => {
   users[id] = user; // add the new user object to global users object
   // set a user_id cookie containing the user's newly generated ID
   req.session.id = user.id;
-  console.log(users); // checker
   return res.redirect('/urls');
 });
 
@@ -217,19 +216,6 @@ app.get('/urls/:id', (req, res) => {
   return res.render('urls_show', templateVars);
 });
 
-// app.get('/u/:id', (req, res) => {
-//   const longURL = urlDatabase[req.params.id];
-//   console.log('Requested ID:', req.params.id);
-//   console.log('URL Database:', urlDatabase);
-//   if (longURL) {
-//     return res.redirect(longURL);
-//   } else {
-//     console.log('URL Not Found!');
-//     const errorMessage = 'You must be logged in to shorten URLs.';
-//     return res.status(401).render('error', { errorMessage });
-//     // return res.status(404).send('URL Not Found!');
-//   }
-// });
 app.get('/u/:id', (req, res) => {
   const shortURL = req.params.id;
   const url = urlDatabase[shortURL];
@@ -237,7 +223,6 @@ app.get('/u/:id', (req, res) => {
   if (url) {
     return res.redirect(url.longURL);
   } else {
-    console.log('URL Not Found!');
     const errorMessage = 'Short URL Not Found!';
     return res.status(404).render('error', { errorMessage });
   }
