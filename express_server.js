@@ -1,8 +1,10 @@
 const express = require("express");
-const cookieParser = require('cookie-parser');
+const { getUserByEmail } = require('./helper');
+// const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
 const app = express(); // instantiate express as new object
-const PORT = 8081; // default port 8080
+const PORT = 3000; // default port 8080
 
 const urlDatabase = {
   b2xVn2: {
@@ -42,20 +44,15 @@ const users = {
   },
 };
 
-// en email lookup helper function
-const getUserByEmail = (email) => {
-  for (const u in users) {
-    const existingUser = users[u];
-    if (existingUser.email === email) {
-      return existingUser;
-    }
-  }
-  return null;
-};
-
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['iamsecretkeys'],
+
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
 app.use(express.urlencoded({ extended: true }));
 
 // Adding routes
@@ -65,7 +62,7 @@ app.get("/", (req, res) => {
 
 // an route for an endpoint /login GET
 app.get('/login', (req, res) => {
-  const id = req.cookies.id;
+  const id = req.session.id;
   if (id && users[id]) {
     return res.redirect('/urls');
   }
@@ -74,7 +71,7 @@ app.get('/login', (req, res) => {
 
 // a GET /register endpoint
 app.get('/register', (req, res) => {
-  const id = req.cookies.id;
+  const id = req.session.id;
   const user = users[id];
 
   if (id && user) {
@@ -110,7 +107,7 @@ app.post('/register', (req, res) => {
 
   users[id] = user; // add the new user object to global users object
   // set a user_id cookie containing the user's newly generated ID
-  res.cookie('id', user.id);
+  req.session.id = user.id;
   console.log(users); // checker
   return res.redirect('/urls');
 });
@@ -124,7 +121,7 @@ app.get("/hello", (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
-  const userId = req.cookies.id;
+  const userId = req.session.id;
   const user = users[userId];
   
   // Check if the user is logged in
@@ -144,7 +141,6 @@ app.get('/urls', (req, res) => {
   return res.render('urls_index', templateVars);
 });
 
-
 app.post('/login', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -158,20 +154,20 @@ app.post('/login', (req, res) => {
     if (err || !result) {
       return res.status(403).send('Invalid email or password!');
     }
-    res.cookie('id', user.id);
+    req.session.id = user.id;
     return res.redirect('/urls');
   });
 });
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('id');
+  req.session = null;
   return res.redirect('/login');
 });
 
 app.post("/urls", (req, res) => {
   const id = generateRandomString();
   const longURL = req.body.longURL;
-  const userId = req.cookies.id;
+  const userId = req.session.id;
   // check if the user has logged int
   if (!userId || !users[userId]) {
     const errorMessage = 'You must be logged in to shorten URLs.';
@@ -187,7 +183,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.get('/urls/new', (req, res) => {
-  const id = req.cookies.id;
+  const id = req.session.id;
   const templateVars = {
     user: users[id]
   };
@@ -198,7 +194,7 @@ app.get('/urls/new', (req, res) => {
 });
 
 app.get('/urls/:id', (req, res) => {
-  const userId = req.cookies.id;
+  const userId = req.session.id;
   const urlId = req.params.id;
   const user = users[userId];
   // const user = id ? users[id] : null;
@@ -248,7 +244,7 @@ app.get('/u/:id', (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  const userId = req.cookies.id;
+  const userId = req.session.id;
   const urlId = req.params.id;
   const user = users[userId];
   // check if the user has logged in
@@ -266,7 +262,7 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.post("/urls/:id/edit", (req, res) => {
-  const userId = req.cookies.id;
+  const userId = req.session.id;
   const urlId = req.params.id;
   const user = users[userId];
   // check if user has logged in
