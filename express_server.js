@@ -1,7 +1,8 @@
 const express = require("express");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');
 const app = express(); // instantiate express as new object
-const PORT = 8080; // default port 8080
+const PORT = 8081; // default port 8080
 
 const urlDatabase = {
   b2xVn2: {
@@ -87,14 +88,15 @@ app.post('/register', (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
+  // hash the password using bcrypt
+  const hashedPassword = bcrypt.hashSync(password, 10);
   // new user object to be added in the global users object
   const user = {
     id,
     email,
-    password
+    password: hashedPassword
   };
-  // set a user_id cookie containing the user's newly generated ID
-  res.cookie('id', user.id);
+
   // if the e-mail or password are empty strings, send back a response with the 400 status code
   if (!user.email || !user.password) {
     return res.status(400).render('You must provide a username and password');
@@ -107,6 +109,8 @@ app.post('/register', (req, res) => {
   }
 
   users[id] = user; // add the new user object to global users object
+  // set a user_id cookie containing the user's newly generated ID
+  res.cookie('id', user.id);
   console.log(users); // checker
   return res.redirect('/urls');
 });
@@ -146,11 +150,17 @@ app.post('/login', (req, res) => {
   const password = req.body.password;
 
   const user = getUserByEmail(email);
-  if (!user || user.password !== password) {
+  if (!user) {
     return res.status(403).send('Invalid email or password!');
   }
-  res.cookie('id', user.id);
-  return res.redirect('/urls');
+
+  bcrypt.compare(password, user.password, (err, result) => {
+    if (err || !result) {
+      return res.status(403).send('Invalid email or password!');
+    }
+    res.cookie('id', user.id);
+    return res.redirect('/urls');
+  });
 });
 
 app.post('/logout', (req, res) => {
