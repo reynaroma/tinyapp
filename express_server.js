@@ -42,6 +42,12 @@ app.get("/", (req, res) => {
   return res.send("Hello!");
 });
 
+// an route for an endpoint /login GET
+app.get('/login', (req, res) => {
+
+  return res.render('login', { user: '' });
+});
+
 // a GET /register endpoint
 app.get('/register', (req, res) => {
   const id = req.cookies.id;
@@ -94,9 +100,9 @@ app.get('/urls', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  const username = req.body.username;
-  console.log(`User logged in: ${username}`);
-  res.cookie('username', username);
+  const email = req.body.email;
+  console.log(`User logged in: ${email}`);
+  // res.cookie('username', username);
   return res.redirect('/urls');
 });
 
