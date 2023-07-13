@@ -10,13 +10,13 @@ const urlDatabase = {
 
 const users = {
   abcdef: {
-    id: "abc",
-    email: "user@example.com",
+    id: "abcdef",
+    email: "user1@example.com",
     password: "1234"
   },
   defghi: {
-    id: "def",
-    email: "user@example.com",
+    id: "defghi",
+    email: "user2@example.com",
     password: "5678"
   },
 };
@@ -44,7 +44,7 @@ app.get("/", (req, res) => {
 
 // an route for an endpoint /login GET
 app.get('/login', (req, res) => {
-  return res.render('login');
+  return res.render('login', { user: '' });
 });
 
 // a GET /register endpoint
@@ -101,8 +101,12 @@ app.get('/urls', (req, res) => {
 app.post('/login', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  console.log(`User logged in: ${email}`);
-  // res.cookie('username', username);
+
+  const user = getUserByEmail(email);
+  if (!user || user.password !== password) {
+    return res.status(403).send('Invalid email or password!');
+  }
+  res.cookie('id', user.id);
   return res.redirect('/urls');
 });
 
