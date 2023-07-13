@@ -44,13 +44,21 @@ app.get("/", (req, res) => {
 
 // an route for an endpoint /login GET
 app.get('/login', (req, res) => {
-  return res.render('login', { user: '' });
+  const id = req.cookies.id;
+  if (id && users[id]) {
+    return res.redirect('/urls');
+  }
+  return res.render('login', { user: ''});
 });
 
 // a GET /register endpoint
 app.get('/register', (req, res) => {
   const id = req.cookies.id;
   const user = users[id];
+
+  if (id && user) {
+    return res.redirect('/urls');
+  }
   return res.render('register', { user });
 });
 
@@ -119,14 +127,23 @@ app.post("/urls", (req, res) => {
   const id = generateRandomString();
   const longURL = req.body.longURL;
   urlDatabase[id] = longURL;
-  return res.redirect(`/urls/${id}`);
+
+  if (req.cookies.id && users[req.cookies.id]) {
+    return res.redirect(`/urls/${id}`);
+  }
+  const errorMessage = 'You must be logged in to shorten URLs.';
+  return res.status(401).render('error', { errorMessage });
 });
 
 app.get('/urls/new', (req, res) => {
+  const id = req.cookies.id;
   const templateVars = {
-    user: users[req.cookies.id]
+    user: users[id]
   };
-  return res.render('urls_new', templateVars);
+  if (id && templateVars.user) {
+    return res.render('urls_new', templateVars);
+  }
+  return res.redirect('/login');
 });
 
 app.get('/urls/:id', (req, res) => {
@@ -148,7 +165,9 @@ app.get('/u/:id', (req, res) => {
     return res.redirect(longURL);
   } else {
     console.log('URL Not Found!');
-    return res.status(404).send('URL Not Found!');
+    const errorMessage = 'You must be logged in to shorten URLs.';
+    return res.status(401).render('error', { errorMessage });
+    // return res.status(404).send('URL Not Found!');
   }
 });
 
