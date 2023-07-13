@@ -19,33 +19,38 @@
   <body>
     <%- include('partials/_header') %>
     <main style="margin: 1em;">
-      <h3>My URLs</h3>
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Short URL ID</th>
-            <th scope="col">Long URL</th>
-            <th scope="col">Edit</th>
-            <th scope="col">Delete</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% for (let id in urls) { %>
-            <tr>
-              <td><%= id %></td>
-              <td><%= urls[id] %></td>
-              <td>
-                <form method="post" action="/urls/<%= id %>/edit">
-                  <button type="submit" class="btn btn-outline-primary">Edit</button></form>
-              </td>
-              <td>
-                <form method="post" action="/urls/<%= id %>/delete">
-                  <button type="submit" class="btn btn-outline-danger">Delete</button></form>
-              </td>
-            </tr>
-          <% } %>
-        </tbody>
-      </table>
+      <div class="container">
+        <% if (urls && Object.keys(urls).length > 0) { %>
+          <h1>My URLs</h1>
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Short URL ID</th>
+                <th scope="col">Long URL</th>
+                <th scope="col">Edit</th>
+                <th scope="col">Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% for (const urlId in urls) { %>
+                <% const url = urls[urlId]; %>
+                <tr>
+                  <th scope="row"><a href="/u/<%= urlId %>"><%= urlId %></a></th>
+                  <td><a href="<%= url.longURL %>"><%= url.longURL %></a></td>
+                  <td><a href="/urls/<%= urlId %>/edit" class="btn btn-outline-primary">Edit</a></td>
+                  <td>
+                    <form method="post" action="/urls/<%= urlId %>/delete">
+                      <button type="submit" class="btn btn-outline-danger">Delete</button>
+                    </form>
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <p>No URLs found.</p>
+        <% } %>
+      </div>
     </main>
     <!-- Bootstrap JS -->
     <script
