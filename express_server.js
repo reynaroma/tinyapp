@@ -4,7 +4,7 @@ const { getUserByEmail } = require('./helper');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
 const app = express(); // instantiate express as new object
-const PORT = 3000; // default port 8080
+const PORT = 3000; // default port 3000
 
 const urlDatabase = {
   b2xVn2: {
@@ -87,17 +87,17 @@ app.post('/register', (req, res) => {
   const password = req.body.password;
   // hash the password using bcrypt
   const hashedPassword = bcrypt.hashSync(password, 10);
+
+  // if the e-mail or password are empty strings, send back a response with the 400 status code
+  if (!email || !password) {
+    return res.status(400).render('You must provide a username and password');
+  }
   // new user object to be added in the global users object
   const user = {
     id,
     email,
     password: hashedPassword
   };
-
-  // if the e-mail or password are empty strings, send back a response with the 400 status code
-  if (!user.email || !user.password) {
-    return res.status(400).render('You must provide a username and password');
-  }
 
   // if found send a response
   const foundEmail = getUserByEmail(email);
@@ -107,6 +107,7 @@ app.post('/register', (req, res) => {
 
   users[id] = user; // add the new user object to global users object
   // set a user_id cookie containing the user's newly generated ID
+  console.log(user);
   req.session.id = user.id;
   return res.redirect('/urls');
 });
@@ -181,6 +182,32 @@ app.post("/urls", (req, res) => {
   return res.redirect(`/urls/${id}`);
 });
 
+app.get('/urls/:id/edit', (req, res) => {
+  const userId = req.session.id;
+  const urlId = req.params.id;
+  const user = users[userId];
+
+  // Check if the user is logged in
+  if (!user) {
+    return res.redirect('/login');
+  }
+
+  // Check if the URL belongs to the user
+  const userUrls = urlsForUser(userId);
+  if (!userUrls[urlId]) {
+    const errorMessage = 'The URL does not belong to you.';
+    return res.status(403).render('error', { errorMessage });
+  }
+
+  const templateVars = {
+    id: urlId,
+    longURL: userUrls[urlId].longURL,
+    user: user
+  };
+
+  return res.render('urls_show', templateVars); // Corrected template name
+});
+
 app.get('/urls/new', (req, res) => {
   const id = req.session.id;
   const templateVars = {
@@ -250,23 +277,27 @@ app.post("/urls/:id/edit", (req, res) => {
   const userId = req.session.id;
   const urlId = req.params.id;
   const user = users[userId];
-  // check if user has logged in
+
+  // Check if the user is logged in
   if (!user) {
     return res.render('login', { user: null });
   }
-  // check if the url belongs to the user
+
+  // Check if the URL belongs to the user
   const userUrls = urlsForUser(userId);
   if (!userUrls[urlId]) {
     const errorMessage = 'The URL does not belong to you.';
     return res.status(403).render('error', { errorMessage });
   }
-  const templateVars = {
-    id: urlId,
-    longURL: urlDatabase[urlId].longURL,
-    user: user
-  };
-  return res.render('urls_show', templateVars);
+
+  // Update the longURL for the given URL ID
+  const newLongURL = req.body.longURL;
+  urlDatabase[urlId].longURL = newLongURL;
+
+  // Redirect to the URL details page
+  return res.redirect(`/urls`);
 });
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
